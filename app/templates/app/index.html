@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Chat</title>
+    <link rel="shortcut icon" href="{% static 'img/icon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <header class="header">
+        <img src="{% static 'img/icon.ico' %}" alt="" class="header__logo">
+        <div class="header__title">Django Chat</div>
+    </header>
+    <main class="main">
+        <h2 class="main__title">Войти в комнату</h2>
+        <div class="form">
+            <input type="text" class="form__input" name="room" placeholder="Введите название комнаты">
+            <input type="text" class="form__input" name="user" placeholder="Введите имя пользователя">
+
+            <button type="submit" class="form__submit" id="loadRoomBtn">Отправить</button>
+        </div>
+        <div class="room">
+            <div class="room__messages"></div>
+            <div class="form">
+                <textarea name="message" class="form__input" placeholder="Введите сообщение"></textarea>
+                <button type="submit" class="form__submit" id="createMessageBtn">Отправить</button>
+            </div>
+        </div>
+    </main>
+    <script>
+        let room = null;
+        let user = null;
+        let messages = null;
+        let messagesShown = [];
+
+        const loadRoomBtn = document.querySelector('#loadRoomBtn');
+        const createMessageBtn = document.querySelector('#createMessageBtn');
+        const roomDiv = document.querySelector('.room');
+        const messagesDiv = document.querySelector('.room__messages');
+        const messageTextInput = document.querySelector('.form__input[name=message]');
+
+        loadRoomBtn.addEventListener('click', async () => {
+            addLoader(loadRoomBtn);
+
+            let roomInput = document.querySelector('.form__input[name="room"]');
+            let userInput = document.querySelector('.form__input[name="user"]');
+            let mainTitle = document.querySelector('.main__title');
+
+            room = roomInput.value
+            user = userInput.value;
+            await getOrCreateRoom(room);
+            await setMessages();
+
+            // Эффектное исчезновение
+            const formElements = [roomInput, userInput, loadRoomBtn, mainTitle];
+            await effect(formElements);
+
+            setTimeout(() => {
+                mainTitle.innerHTML = room.title
+                mainTitle.style.opacity = '1';
+                mainTitle.style.display = 'block';
+                roomDiv.style.opacity = '1';
+                roomDiv.style.display = 'block'
+            }, 2000);
+
+            setInterval(async () => {
+                await setMessages();
+                for (let message of messages) {
+                    if (!messagesShown.includes(message.id)) {
+                        addMessageToHTML(message);
+                        messagesShown.push(message.id);
+                    }
+                }
+            }, 2000);
+        });
+
+        function addMessageToHTML(message) {
+            const formattedDate = formateDate(message.date);
+
+            const messageElement = document.createElement('div');
+            const messageSenderElement = document.createElement('div');
+            const messageTextElement = document.createElement('div');
+            const messageDateElement = document.createElement('time');
+
+            messageElement.classList.add('message');
+            messageSenderElement.classList.add('message__sender');
+            messageTextElement.classList.add('message__text');
+            if (user == message.user) {
+                messageTextElement.classList.add('message__text--from-me');
+            }
+            messageDateElement.classList.add('message__date');
+            
+            messageSenderElement.innerHTML = message.user;
+            messageTextElement.innerHTML = message.text;
+            messageDateElement.innerHTML = formattedDate;
+
+            messageElement.appendChild(messageSenderElement);
+            messageElement.appendChild(messageTextElement);
+            messageElement.appendChild(messageDateElement);
+            
+            messageElement.style.backgroundColor = '#dee649';
+            messagesDiv.appendChild(messageElement);
+            messageElement.scrollIntoView({
+                behavior: 'smooth'
+            });
+            setTimeout(() => {
+                messageElement.style = ''
+            }, 1000);
+        }
+
+        createMessageBtn.addEventListener('click', async () => {
+            addLoader(createMessageBtn);
+            let text = messageTextInput.value;
+            messageTextInput.value = '';
+            if (!text.trim() == '') {
+                let response = await createMessage(text);
+    
+                // Для красоты
+                setTimeout(() => {
+                    rmLoaderToText(createMessageBtn, 'Отправить');
+                }, 200)
+            }
+        })
+
+        function formateDate(date) {
+            let dateObject = new Date(date);
+            const hours = dateObject.getHours();
+            const minutes = dateObject.getMinutes();
+
+            return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+        }
+
+        async function createMessage(text) {
+            let response = await fetch(`/api/room/${room.title}/messages/`, {
+                method: 'POST',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    text: text,
+                    user: user,
+                    room: room.id
+                })
+            });
+            console.log(await response.json());
+            return response;
+        }
+
+        async function getOrCreateRoom(roomValue) {
+            let response = await fetch(`/api/room/${roomValue}/`, {
+                method: "GET"
+            });
+
+            room = await response.json();
+            if (room.detail) {
+                response = await fetch('/api/room/', {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        title: roomValue
+                    })
+                });
+                room = await response.json();
+                console.log(room);
+            }
+        }
+
+        async function setMessages() {
+            response = await fetch(`/api/room/${room.title}/messages/`);
+            messages = await response.json();
+        }
+
+        function effect(formElements) {
+            for (let element of formElements) {
+                element.style.transition = 'all 2s linear';
+                element.style.opacity = '0';
+                setTimeout(() => {
+                    element.style.display = 'none';
+                    element.innerHTML = '';
+                }, 2000);
+            }
+        }
+
+        function addLoader(btn) {
+            const i = document.createElement('div');
+            i.classList.add('loader');
+            btn.innerHTML = i.outerHTML;
+        }
+        function rmLoaderToText(btn, text) {
+            btn.innerHTML = text;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+.header {
+    padding: 20px;
+    background-color: #0d6efd;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+.header__logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+}
+.header__title {
+    font-size: 50px;
+    font-weight: bold;
+    color: #fff;
+}
+.main {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.main__title {
+    text-align: center;
+    font-size: 50px;
+    color: #0d6efd;
+}
+.form {
+    width: 400px;
+    margin: 20px auto;
+}
+.form__input {
+    padding: 10px 15px;
+    width: 100%;
+    border: 1px solid #0d6efd;
+    transition: all .4s linear;
+    resize: vertical;
+}
+.form__input::placeholder {
+    color: #0d6efd;
+}
+.form__input[name=room] {
+    border-radius: 0 50px 0 0;
+    border-bottom: none;
+}
+.form__input:focus,
+.form__input:hover {
+    outline: none;
+    border-color: #000;
+}
+.form__input:focus::placeholder,
+.form__input:hover::placeholder {
+    color: #000;
+}
+.form__submit {
+    width: 100%;
+    outline: none;
+    border: 1px solid #0d6efd;
+    border-radius: 0 0 0 50px;
+    border-top: none;
+    padding: 10px 15px;
+    background-color: transparent;
+    transition: all .4s ease;
+    font-weight: bold;
+    color: #0d6efd;
+    cursor: pointer;
+}
+.form__submit:hover {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+    text-align: center;
+}
+.loader {
+    width: 16px;
+    height: 16px;
+    border: 3px solid #0d6efd;
+    border-radius: 50%;
+    animation: loader 1s infinite linear;
+    border-bottom: 3px solid transparent;
+    margin: 0 auto;
+}
+@keyframes loader {
+    from {
+        transform: rotate(0deg);
+    } to {
+        transform: rotate(360deg);
+    }
+}
+.room {
+    transition: all 2s linear;
+    opacity: 0;
+    display: none;
+}
+.room__messages {
+    width: 700px;
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin: 0 auto;
+    border-radius: 30px;
+    padding: 20px;
+}
+.room__messages::-webkit-scrollbar {
+    width: 6px;
+    border-radius: 20px;
+}
+.room__messages::-webkit-scrollbar-track {
+    background-color: #ccc;
+}
+.room__messages::-webkit-scrollbar-thumb {
+    background-color: #0d6efd;
+    border-radius: 5px;
+    border: 1px solid #0d6efd;
+}
+.message {
+    background-color: #e8ff91;
+    width: 400px;
+    text-wrap: wrap;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+}
+.message__sender {
+    font-weight: bold;
+    font-size: 20px;
+}
+.message__text {
+    font-size: 18px;
+}
+.message:has(> .message__text--from-me) {
+    margin-left: 250px;
+    background-color: #fff;
+    border: 1px solid #000;
+}
+.message__date {
+    display: block;
+    text-align: right;
+    font-size: 14px;
+}
+.room .form .form__submit {
+    border-radius: 0;
+    margin-top: 5px;
+    border: 1px solid #0d6efd;
+}
