@@ -1,4 +1,4 @@
-# Приложение опросник на Django
+# Чат на Django
 ## Демо фото:
 ![Demo 1](demo/demo1.png)
 
